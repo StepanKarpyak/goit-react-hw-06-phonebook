@@ -1,5 +1,8 @@
-import styled from 'styled-components';
+import { render, screen } from '@testing-library/react';
+import App from './App';
 
-export const Container = styled.div`
-  padding: 25px;
-`;
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});

@@ -1,81 +1,81 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { getItems } from 'redux/selectors';
-import { addItem } from 'redux/PhonebookSlice';
-import { nanoid } from 'nanoid';
-import { Formik, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
+import { useSelector, useDispatch } from 'react-redux'
+import { nanoid } from 'nanoid';
+import { addItems, getContacts } from 'redux/contactsSlice';
 import {
-  FormBoxStyled,
-  LabelStyled,
-  ButtonStyled,
-  InputStyled,
-  ErrorText,
+  Message,
+  Label,
+  SubmitButton,
+  FormContainer,
 } from './ContactForm.styled';
 
+const schema = yup.object().shape({
+  name: yup.string().required(),
+  number: yup.number().required().positive().integer(),
+});
 
-function ContactForm() {
-  const contacts = useSelector(getItems);
+export default function ContactForm() {
+  const contactsRedux = useSelector(getContacts)
   const dispatch = useDispatch();
-
-
-  const handleSubmit = (values, { resetForm }) => {
-    const {name, number} = values
-    
-    contacts.find(contact => contact.name.toLowerCase() === values.name.toLowerCase())
-      ? alert(`${values.name} is already in contacts`)
-      : dispatch(addItem({ name, number, id: nanoid() }))
-    
-    resetForm();
+  const handleSubmit = ({name, number}, {resetForm}) => {
+    const contact = {
+      id: nanoid(),
+      name: name,
+      number: number,
+    };
+        if (
+      !contactsRedux.find(
+        oldContact =>
+          oldContact.name.toLowerCase() === contact.name.toLowerCase()
+      )
+    ) {
+      dispatch(addItems(contact));
+    } else {
+      alert(`${contact.name} is already in contacts`);
+    }
+    resetForm()
   };
 
-  const schema = yup.object().shape({
-    name: yup.string().required(),
-    number: yup.string().required(),
-  });
 
   return (
-    <>
-      <Formik
-        initialValues={{ name: '', number: '' }}
-        validationSchema={schema}
-        onSubmit={handleSubmit}
-      >
-        <FormBoxStyled autoComplete="off">
-          <LabelStyled>
-            Name
-            <InputStyled
-              type="text"
+    <Formik
+      initialValues={{ name: '', number: '' }}
+      onSubmit={handleSubmit}
+      validationSchema={schema}
+    >
+      <FormContainer>
+        <Form autoComplete="off">
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Field type="text" name="name" />
+            <ErrorMessage
               name="name"
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-              required
+              render={message => (
+                <Message>
+                  Name may contain only letters, apostrophe, dash and spaces.
+                  For example Adrian, Jacob Mercer, Charles de Batz de
+                  Castelmore d'Artagnan
+                </Message>
+              )}
             />
-          </LabelStyled>
-          <ErrorMessage
-            name="name"
-            render={message => <ErrorText>{message}</ErrorText>}
-          />
-
-          <LabelStyled>
-            Number
-            <InputStyled
-              type="tel"
+          </div>
+          <div>
+            <Label htmlFor="tel">Number</Label>
+            <Field type="tel" name="number" />
+            <ErrorMessage
               name="number"
-              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-              title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-              required
+              render={message => (
+                <Message>
+                  Phone number must be digits and can contain spaces, dashes,
+                  parentheses and can start with +
+                </Message>
+              )}
             />
-          </LabelStyled>
-          <ErrorMessage
-            name="number"
-            render={message => <ErrorText>{message}</ErrorText>}
-          />
-          <ButtonStyled type="submit">Add contact</ButtonStyled>
-        </FormBoxStyled>
-      </Formik>
-    </>
+          </div>
+          <SubmitButton type="submit">Add contact</SubmitButton>
+        </Form>
+      </FormContainer>
+    </Formik>
   );
 }
-
-export default ContactForm;

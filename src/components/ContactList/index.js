@@ -1,1 +1,2 @@
-export { default } from './ContactList';
+import ContactList from "./ContactList";
+export default ContactList;

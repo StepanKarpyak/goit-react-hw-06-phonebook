@@ -1,28 +1,19 @@
-import React from 'react';
+import { getFilter, getContacts } from 'redux/contactsSlice';
 import { useSelector } from 'react-redux';
-import { getItems, getFilter } from 'redux/selectors';
-import ContactItem from '../ContactItem';
-import { UlContacts } from './ContactList.styled';
+import ContactListItem from '../ContactListItem';
 
-const ContactList = () => {
+export default function ContactList() {
   const filter = useSelector(getFilter);
-  const normalizedFilter = filter.toLowerCase();
+  const contacts = useSelector(getContacts);
 
-  const contacts = useSelector(getItems);
-  const visibleContacts = contacts.filter(contact => contact.name.toLowerCase().includes(normalizedFilter))
-
+  const filterContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
   return (
-    <UlContacts>
-      {visibleContacts.map(({ id, name, number }) => (
-        <ContactItem
-          key={id}
-          name={name}
-          number={number}
-          id={id}
-        />
+    <ul>
+      {filterContacts.map(({ id, name, number }) => (
+        <ContactListItem key={id} id={id} name={name} number={number} />
       ))}
-    </UlContacts>
-  )
-};
-
-export default ContactList;
+    </ul>
+  );
+}
